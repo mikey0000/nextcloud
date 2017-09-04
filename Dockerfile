@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-ARG NEXTCLOUD_VERSION=11.0.3
+ARG NEXTCLOUD_VERSION=12.0.2
 ARG GPG_nextcloud="2880 6A87 8AE4 23A2 8372  792E D758 99B9 A724 937A""
 
 ENV UID=1000 GID=1000 \
@@ -78,8 +78,9 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
     php7-iconv \
     php7-pear \
     php7-dev \
- && pecl install smbclient apcu \
+ && pecl install smbclient redis apcu \
  && echo "extension=smbclient.so" > /etc/php7/conf.d/00_smbclient.ini \
+ && echo "extension=redis.so" > /etc/php7/conf.d/00_redis.ini \
  && sed -i 's|;session.save_path = "/tmp"|session.save_path = "/data/session"|g' /etc/php7/php.ini \
  && pip install -U pip \
  && pip install -U certbot \
@@ -102,6 +103,21 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
  && tar xjf ${NEXTCLOUD_TARBALL} --strip 1 -C /nextcloud \
  && apk del ${BUILD_DEPS} php7-pear php7-dev \
  && rm -rf /var/cache/apk/* /tmp/* /root/.gnupg
+ 
+ # PECL extensions
+RUN set -ex \
+ && pecl install memcached-3.0.3 \
+ && docker-php-ext-enable apcu redis memcached
+
+RUN { \
+  echo 'opcache.enable=1'; \
+  echo 'opcache.enable_cli=1'; \
+  echo 'opcache.interned_strings_buffer=8'; \
+  echo 'opcache.max_accelerated_files=10000'; \
+  echo 'opcache.memory_consumption=128'; \
+  echo 'opcache.save_comments=1'; \
+  echo 'opcache.revalidate_freq=1'; \
+  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY php-fpm.conf /etc/php7/php-fpm.conf
@@ -123,6 +139,6 @@ EXPOSE 8080 8443
 
 LABEL description="A server software for creating file hosting services" \
       nextcloud="Nextcloud v${NEXTCLOUD_VERSION}" \
-      maintainer="ull <mart.maiste@gmail.com>"
+      maintainer="ull <methodreturn@gmail.com>"
 
 CMD ["run.sh"]
