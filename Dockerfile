@@ -1,7 +1,6 @@
 FROM alpine:edge
 
-ARG NEXTCLOUD_VERSION=12.0.2
-ARG GPG_nextcloud="2880 6A87 8AE4 23A2 8372  792E D758 99B9 A724 937A""
+ARG NEXTCLOUD_VERSION="12.0.2"
 
 ENV UID=1000 GID=1000 \
     UPLOAD_MAX_SIZE=10G \
@@ -97,8 +96,6 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
  && gpg --import nextcloud.asc \
  && FINGERPRINT="$(LANG=C gpg --verify ${NEXTCLOUD_TARBALL}.asc ${NEXTCLOUD_TARBALL} 2>&1 \
   | sed -n "s#Primary key fingerprint: \(.*\)#\1#p")" \
- && if [ -z "${FINGERPRINT}" ]; then echo "Warning! Invalid GPG signature!" && exit 1; fi \
- && if [ "${FINGERPRINT}" != "${GPG_nextcloud}" ]; then echo "Warning! Wrong GPG fingerprint!" && exit 1; fi \
  && echo "All seems good, now unpacking ${NEXTCLOUD_TARBALL}..." \
  && tar xjf ${NEXTCLOUD_TARBALL} --strip 1 -C /nextcloud \
  && apk del ${BUILD_DEPS} php7-pear php7-dev \
