@@ -90,11 +90,7 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
  && tar xjf ${NEXTCLOUD_TARBALL} --strip 1 -C /nextcloud \
  && apk del ${BUILD_DEPS} php7-pear php7-dev \
  && rm -rf /var/cache/apk/* /tmp/* /root/.gnupg
- 
- # PECL extensions
-RUN set -ex \
- && pecl install memcached-3.0.3 \
- && docker-php-ext-enable apcu redis memcached
+
 
 RUN { \
   echo 'opcache.enable=1'; \
