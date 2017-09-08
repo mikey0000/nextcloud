@@ -92,16 +92,6 @@ RUN echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositorie
  && rm -rf /var/cache/apk/* /tmp/* /root/.gnupg
 
 
-RUN { \
-  echo 'opcache.enable=1'; \
-  echo 'opcache.enable_cli=1'; \
-  echo 'opcache.interned_strings_buffer=8'; \
-  echo 'opcache.max_accelerated_files=10000'; \
-  echo 'opcache.memory_consumption=128'; \
-  echo 'opcache.save_comments=1'; \
-  echo 'opcache.revalidate_freq=1'; \
-  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY php-fpm.conf /etc/php7/php-fpm.conf
 COPY opcache.ini /etc/php7/conf.d/00_opcache.ini
@@ -113,6 +103,16 @@ COPY s6.d /etc/s6.d
 COPY generate-certs /usr/local/bin/generate-certs
 COPY letsencrypt-setup /usr/local/bin/letsencrypt-setup
 COPY letsencrypt-renew /usr/local/bin/letsencrypt-renew
+
+RUN { \
+  echo 'opcache.enable=1'; \
+  echo 'opcache.enable_cli=1'; \
+  echo 'opcache.interned_strings_buffer=8'; \
+  echo 'opcache.max_accelerated_files=10000'; \
+  echo 'opcache.memory_consumption=128'; \
+  echo 'opcache.save_comments=1'; \
+  echo 'opcache.revalidate_freq=1'; \
+  } > /etc/php7/conf.d/00_opcache.ini
 
 RUN chmod +x /usr/local/bin/* /etc/s6.d/*/* /etc/s6.d/.s6-svscan/*
 
